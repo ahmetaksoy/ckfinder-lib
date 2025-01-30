@@ -14,10 +14,10 @@
   },
   "scripts": {
     "post-install-cmd": [
-      "php bin/ckfinder-install.php"
+      "php bin/install.php"
     ],
     "post-update-cmd": [
-      "php bin/ckfinder-install.php"
+      "php bin/install.php"
     ],
     "ckfinder:install": "php bin/ckfinder-install.php",
     "ckfinder:publish": "php bin/ckfinder-publish.php"
