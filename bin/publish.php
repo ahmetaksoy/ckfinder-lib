@@ -16,17 +16,21 @@ function getArgument(string $name, ?string $default = null): ?string
 $publicTarget = getArgument('public');
 
 if (!$publicTarget) {
-    die("❌ HATA: --public parametresini belirtmelisiniz.\nÖrnek: composer ckfinder:publish -- --public=/var/www/public\n");
+    die("❌ HATA: --public parametresini belirtmelisiniz.\nÖrnek: composer run-script ckfinder:publish -- --public=/var/www/public\n");
 }
 
+// CKFinder kaynağı (vendor/ahmetaksoy/ckfinder/CKFinder)
 $ckfinderExtractedPath = dirname(__DIR__) . '/CKFinder/ckfinder';
 
-$finalPublicTarget = rtrim($publicTarget, '/') . '/ckfinder';
+// Vendor dışındaki hedef dizin (ana proje dizini içinde /ckfinder)
+$finalPublicTarget = realpath(dirname(__DIR__, 3)) . '/' . trim($publicTarget, '/') . '/ckfinder';
 
-if (!file_exists($finalPublicTarget)) {
-    mkdir($finalPublicTarget, 0755, true);
+// Eğer hedef dizin yoksa oluştur
+if (!file_exists($finalPublicTarget) && !mkdir($finalPublicTarget, 0755, true) && !is_dir($finalPublicTarget)) {
+    die("❌ HATA: Dizin oluşturulamadı: $finalPublicTarget\n");
 }
 
+// Kopyalanacak dosyalar
 $filesToCopy = [
     'skins',
     'lang',
@@ -36,7 +40,10 @@ $filesToCopy = [
     'ckfinder.html'
 ];
 
-function copyFiles(string $source, string $target, array $allowedFiles): void
+// En son kopyalanan dosya
+$lastCopiedFile = '';
+
+function copyFiles(string $source, string $target, array $allowedFiles, &$lastCopiedFile): void
 {
     foreach ($allowedFiles as $file) {
         $srcPath = $source . '/' . $file;
@@ -48,18 +55,31 @@ function copyFiles(string $source, string $target, array $allowedFiles): void
         }
 
         if (is_dir($srcPath)) {
-            mkdir($targetPath, 0755, true);
+            if (!file_exists($targetPath) && !mkdir($targetPath, 0755, true) && !is_dir($targetPath)) {
+                echo "❌ HATA: $targetPath dizini oluşturulamadı.\n";
+                continue;
+            }
+
             foreach (scandir($srcPath) as $subFile) {
                 if ($subFile !== '.' && $subFile !== '..') {
-                    copyFiles($srcPath . '/' . $subFile, $targetPath . '/' . $subFile, []);
+                    copyFiles($srcPath . '/' . $subFile, $targetPath . '/' . $subFile, [], $lastCopiedFile);
                 }
             }
         } else {
-            copy($srcPath, $targetPath);
+            if (copy($srcPath, $targetPath)) {
+                $lastCopiedFile = realpath($targetPath);
+            } else {
+                echo "❌ HATA: $srcPath -> $targetPath kopyalanamadı.\n";
+            }
         }
     }
 }
 
-copyFiles($ckfinderExtractedPath, $finalPublicTarget, $filesToCopy);
+copyFiles($ckfinderExtractedPath, $finalPublicTarget, $filesToCopy, $lastCopiedFile);
 
-echo "✅ CKFinder gerekli dosyaları kopyalandı: $finalPublicTarget\n";
+if ($lastCopiedFile) {
+    echo "✅ CKFinder gerekli dosyaları kopyalandı: $finalPublicTarget\n";
+    echo "📌 En son kopyalanan dosya: $lastCopiedFile\n";
+} else {
+    echo "⚠️ Uyarı: Hiçbir dosya kopyalanmadı.\n";
+}
