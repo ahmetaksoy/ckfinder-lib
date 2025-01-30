@@ -19,7 +19,7 @@
     "post-update-cmd": [
       "php bin/install.php"
     ],
-    "ckfinder:install": "php bin/ckfinder-install.php",
-    "ckfinder:publish": "php bin/ckfinder-publish.php"
+    "ckfinder:install": "php bin/install.php",
+    "ckfinder:publish": "php bin/publish.php"
   }
 }
