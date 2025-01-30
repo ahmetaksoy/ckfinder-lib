@@ -22,8 +22,11 @@ if (!$publicTarget) {
 // CKFinder kaynağı (vendor/ahmetaksoy/ckfinder/CKFinder)
 $ckfinderExtractedPath = dirname(__DIR__) . '/CKFinder/ckfinder';
 
+$projectRoot = dirname(__DIR__, 4);
+$publicTarget = trim($publicTarget, '/');
+
 // Vendor dışındaki hedef dizin (ana proje dizini içinde /ckfinder)
-$finalPublicTarget = realpath(dirname(__DIR__, 3)) . '/' . trim($publicTarget, '/') . '/ckfinder';
+$finalPublicTarget = $publicTarget ? "$projectRoot/$publicTarget/ckfinder" : "$projectRoot/ckfinder";
 
 // Eğer hedef dizin yoksa oluştur
 if (!file_exists($finalPublicTarget) && !mkdir($finalPublicTarget, 0755, true) && !is_dir($finalPublicTarget)) {
