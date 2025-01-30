@@ -19,7 +19,7 @@ if (!$publicTarget) {
     die("❌ HATA: --public parametresini belirtmelisiniz.\nÖrnek: composer ckfinder:publish -- --public=/var/www/public\n");
 }
 
-$ckfinderExtractedPath = dirname(__DIR__) . '/CKFinder';
+$ckfinderExtractedPath = dirname(__DIR__) . '/CKFinder/ckfinder';
 
 $finalPublicTarget = rtrim($publicTarget, '/') . '/ckfinder';
 
